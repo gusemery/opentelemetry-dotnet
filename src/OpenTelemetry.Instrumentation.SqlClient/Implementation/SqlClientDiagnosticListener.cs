@@ -206,7 +206,7 @@ namespace OpenTelemetry.Instrumentation.SqlClient.Implementation
             {
                 
                 var statement = commandText.Split(' ');
-                if (statement.Length > 1)
+                if (statement.Length > 0)
                 {
                     switch (statement[0].ToLowerInvariant())
                     {
