@@ -157,7 +157,7 @@ namespace OpenTelemetry.Instrumentation.AspNet.Implementation
                 if (!string.IsNullOrEmpty(template))
                 {
                     // Override the name that was previously set to the path part of URL.
-                    activity.DisplayName = template;
+                    // activity.DisplayName = template;
                     activity.SetTag(SemanticConventions.AttributeHttpRoute, template);
                 }
 

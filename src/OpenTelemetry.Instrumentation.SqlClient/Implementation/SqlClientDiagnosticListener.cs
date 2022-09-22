@@ -81,12 +81,10 @@ namespace OpenTelemetry.Instrumentation.SqlClient.Implementation
                         {
                             _ = this.connectionFetcher.TryFetch(command, out var connection);
                             _ = this.databaseFetcher.TryFetch(connection, out var database);
-
-                            activity.DisplayName = (string)database;
-
                             _ = this.dataSourceFetcher.TryFetch(connection, out var dataSource);
                             _ = this.commandTextFetcher.TryFetch(command, out var commandText);
 
+                            activity.DisplayName = GetDisplayName((string)database, (string)commandText);
                             activity.SetTag(SemanticConventions.AttributeDbName, (string)database);
 
                             this.options.AddConnectionLevelDetailsToActivity((string)dataSource, activity);
@@ -200,6 +198,38 @@ namespace OpenTelemetry.Instrumentation.SqlClient.Implementation
 
                     break;
             }
+        }
+        private string GetDisplayName(string database, string commandText)
+        {
+            string result = database;
+            if (!string.IsNullOrEmpty(commandText))
+            {
+                
+                var statement = commandText.Split(' ');
+                if (statement.Length > 1)
+                {
+                    switch (statement[0].ToLowerInvariant())
+                    {
+                        case "select":
+                            result = database + ".SELECT";
+                            break;
+                        case "insert":
+                            result=  database + ".INSERT";
+                            break;
+                        case "update":
+                            result = database + ".UPDATE";
+                            break;
+                        case "delete":
+                            result = database + ".DELETE";
+                            break;
+                        default:
+                            return database + "." + statement[0];
+                    }
+                }
+            }
+
+            Debug.WriteLine(result);
+            return result;
         }
     }
 }

@@ -148,11 +148,40 @@ namespace OpenTelemetry.Instrumentation.SqlClient.Implementation
                 this.options.AddConnectionLevelDetailsToActivity((string)eventData.Payload[1], activity);
 
                 string commandText = (string)eventData.Payload[3];
+                activity.DisplayName = GetDisplayName(databaseName, commandText);
+
                 if (!string.IsNullOrEmpty(commandText) && this.options.SetDbStatement)
                 {
                     activity.SetTag(SemanticConventions.AttributeDbStatement, commandText);
                 }
             }
+        }
+
+        private string GetDisplayName(string database, string commandText)
+        {
+           if(!string.IsNullOrEmpty(commandText))
+            {
+                var statement = commandText.Split(' ');
+                if(statement.Length > 1)
+                {
+                    switch(statement[0].ToLowerInvariant())
+                    {
+                        case "select":
+                            return database + ".SELECT";
+                        case "insert":
+                            return  database + ".INSERT";
+                        case "update":
+                            return  database + ".UPDATE";
+                        case "delete":
+                            return  database + ".DELETE";
+                        default:
+                            return database;
+                    }
+                }
+            }
+
+
+            return database;
         }
 
         private void OnEndExecute(EventWrittenEventArgs eventData)
